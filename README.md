@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tiwalo banking web
 
-## Getting Started
+Tiwalo is a simulated Philippine banking project using fictional balances and synthetic customers. W0 delivers a public introduction, an accessible site shell and production browser verification. Sign-in, account access and transfers are planned integrations.
 
-First, run the development server:
+## Run locally
 
-```bash
+Use Node 24.22.3 and its bundled npm 11.19.1. With a compatible Node version manager, select the version in `.nvmrc`. From the repository root run:
+
+```sh
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [the local site](http://localhost:3000). The public page works without Keycloak, Spring, a database or an environment file. The illustration and fonts are served locally or supplied by the operating system. See [.env.example](.env.example) for optional development settings and planned server-only variables.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Verify the foundation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sh
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm exec -- playwright install --with-deps chromium
+npm run test:e2e
+```
 
-## Learn More
+On Windows or macOS, use `npm exec -- playwright install chromium` for browser installation. Playwright starts the production server on loopback port 3100 and shuts it down after the tests. Keep that port available. The suite checks keyboard navigation, narrow-screen reflow, accessible content, the 404 response and CSP enforcement. Vitest covers public components and the error retry action.
 
-To learn more about Next.js, take a look at the following resources:
+The [verification workflow](.github/workflows/verify.yml) runs these checks on Linux for pull requests and pushes to main. Production uses `npm run build` followed by `npm start` behind an HTTPS reverse proxy. See the [foundation decision](docs/adr/0001-web-foundation.md) for the rendering and deployment requirements.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Backend dependency
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+W0 aligns with backend foundation milestone B0. It sends no banking requests and holds no credentials. W1 will pin the published [banking API contract](https://github.com/Tiwalo/banking-core-api/blob/fc06aebdc53ae2e4a28e54aaeb875294e317e8c1/api/openapi/banking-v1.yaml) at commit `fc06aebdc53ae2e4a28e54aaeb875294e317e8c1` and generate the server-side adapter types. The backend owns account authorization, posting, receipts and reconciliation.
