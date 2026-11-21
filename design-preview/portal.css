@@ -38,6 +38,9 @@
 .panel-heading a { display: inline-flex; align-items: center; gap: 4px; font-size: .85rem; white-space: nowrap; }
 .panel .helper { margin-bottom: 8px; }
 .section-stack { margin-top: 24px; }
+.account-skeleton { display: grid; gap: 8px; margin-top: 16px; }
+.account-skeleton span { height: 16px; width: min(100%, 16rem); border-radius: 8px; background: var(--border); }
+.account-skeleton span + span { height: 12px; width: min(65%, 10rem); background: var(--mist); }
 .entry-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 16px 0; border-top: 1px solid var(--border); text-decoration: none; }
 a.entry-row:hover { background: var(--mist); }
 .entry-row small, .entry-row strong { display: block; }

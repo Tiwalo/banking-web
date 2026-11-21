@@ -1,6 +1,6 @@
 # W0 design preview
 
-Run `npm run preview:design` and open `http://127.0.0.1:4173`. The Vite development entry lives outside the Next App Router. Dashboard navigation and the preview screen selector use hash routes. No service credentials are required. All example identities, amounts, findings and receipts are synthetic. Reloading resets edited payment details.
+Run `npm run preview:design` and open `http://127.0.0.1:4173`. The Vite development entry lives outside the Next App Router. Dashboard navigation and the preview screen selector use hash routes. No service credentials are required. All example identities, amounts, findings and receipts are synthetic. Reloading resets edited payment details. On Dashboard or Accounts, choose Loading in the data state selector to see the static account skeleton and its screen-reader status.
 
 The public site uses a temporary navy text wordmark pending a shared approved flowing-T source. InterVariable.woff2 and its OFL license come from rsms/inter v4.1. Lucide outline icons are pinned in the lockfile and distributed with their upstream license. The balance card uses original contour paths. Preview and public pages share the same font and semantic colors. Light source accents are decorative; darker text, icons and labels communicate statuses.
 

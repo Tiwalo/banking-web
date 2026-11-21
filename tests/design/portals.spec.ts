@@ -99,11 +99,22 @@ test("transfer preserves reviewed details and submit has no financial side effec
   expect(requests).toEqual([]);
 });
 
-test("data variants and explicit operator lookup and paging", async ({ page }) => {
+test("data variants and explicit operator lookup and paging", async ({ page }, info) => {
   await page.goto("/#/dashboard");
   for (const [state, message] of [["Loading", "Loading account"], ["Empty", "No accounts"], ["Unavailable", "could not be loaded"]]) {
     await page.getByLabel("Data state").selectOption(state);
-    await expect(page.getByRole("status")).toContainText(message);
+    const status = page.getByRole("status");
+    await expect(status).toContainText(message);
+    await expect(status).not.toHaveAttribute("aria-busy", "true");
+    const skeleton = page.locator(".account-skeleton");
+    if (state === "Loading") {
+      await expect(skeleton).toBeVisible();
+      await expect(skeleton).toHaveAttribute("aria-hidden", "true");
+      await accessible(page);
+      await page.screenshot({ path: info.outputPath("account-loading.png"), fullPage: true });
+    } else {
+      await expect(skeleton).toHaveCount(0);
+    }
   }
   await page.getByLabel("Preview screen").selectOption("/operations");
   await page.getByLabel("Run ID", { exact: true }).fill(runId);

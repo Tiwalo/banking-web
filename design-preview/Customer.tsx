@@ -12,9 +12,12 @@ export function AccountsView({ path, state }: { path: string; state: string }) {
   return <>
     <h1>{dashboard ? "Welcome back" : selected ? "Account details" : "Accounts"}</h1>
     <p className="intro">{dashboard ? "Your account overview" : selected ? "PHP account · " + maskedReference(selected.reference) : "Your PHP accounts and their available balances."}</p>
-    {state !== "Default" ? <Panel title="Account overview"><p role="status" aria-busy={state === "Loading"}>{{
-      Loading: "Loading account balances…", Empty: "No accounts are available.", Unavailable: "Account balances could not be loaded.",
-    }[state]}</p></Panel> : <>
+    {state !== "Default" ? <Panel title="Account overview">
+      <p role="status">{{
+        Loading: "Loading account balances…", Empty: "No accounts are available.", Unavailable: "Account balances could not be loaded.",
+      }[state]}</p>
+      {state === "Loading" && <div className="account-skeleton" aria-hidden="true"><span /><span /></div>}
+    </Panel> : <>
       <BalanceCard reference={shown.reference} minor={shown.minor} />
       {dashboard && <div className="quick-actions">
         <a className="action" href="#/transfers/new"><Send size={18} />Send Money</a>
