@@ -19,7 +19,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <a className="skip-link" href="#main">Skip to content</a>
         <header className="masthead">
           <div className="frame masthead-inner">
-            <Link className="wordmark" href="/" aria-label="Tiwalo home">
+            <Link className="wordmark" href="/">
               <Wordmark />
             </Link>
             <nav aria-label="Main navigation">

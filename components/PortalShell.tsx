@@ -64,6 +64,7 @@ export function PortalShell({ area, navigation, logoutHref, toolbar, pageKey, ch
     <aside className="rail">{links(false)}</aside>
     <header className="portal-bar">
       <button ref={opener} className="menu-toggle" aria-haspopup="dialog" aria-label="Open navigation" onClick={() => dialog.current?.showModal()}><Menu aria-hidden="true" /></button>
+      <span className="compact-brand"><Wordmark /></span>
       <span className="area-name">{area} portal</span>
       {toolbar}
     </header>

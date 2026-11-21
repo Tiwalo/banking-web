@@ -36,6 +36,7 @@ for (const [name, path, heading] of [
       await accessible(page);
       await page.screenshot({ path: info.outputPath(name + "-" + width + ".png"), fullPage: true });
     }
+    await page.setViewportSize({ width: 794, height: 1123 });
     await page.emulateMedia({ media: "print" });
     await expect(page.getByText("Design preview · synthetic data", { exact: true })).toBeVisible();
     if (name === "receipt") {

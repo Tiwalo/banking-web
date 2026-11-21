@@ -71,13 +71,16 @@ form.form-card:not(.panel) { margin-top: 16px; }
 .dependency { margin-top: 24px; }
 .dependency h2 { margin: 12px 0; }
 .menu-toggle, .close-menu { width: 44px; height: 44px; display: inline-grid; place-content: center; border: 1px solid var(--field-edge); border-radius: 10px; background: white; color: var(--navy); }
-.menu-toggle, .drawer:not([open]) { display: none; }
+.compact-brand, .menu-toggle, .drawer:not([open]) { display: none; }
 .drawer { position: fixed; inset: 0 auto 0 0; margin: 0; width: min(300px, 90vw); height: 100dvh; max-height: none; border: 0; }
 .drawer::backdrop { background: rgb(9 44 98 / 45%); }
 .close-menu { position: absolute; top: 16px; right: 16px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (max-width: 1023px) {
   .rail { display: none; }
+  .compact-brand { display: inline-flex; }
+  .compact-brand .brand-name { font-size: 1.4rem; }
+  .compact-brand .brand-kind { font-size: .5rem; }
   .menu-toggle { display: inline-grid; }
   .portal-bar, .portal-main { margin-left: 0; }
   .portal-bar { justify-content: flex-start; }
@@ -97,7 +100,7 @@ form.form-card:not(.panel) { margin-top: 16px; }
 }
 @media print {
   body, .portal { background: white; color: black; }
-  .rail, .portal-bar .menu-toggle, .portal-bar .area-name, .preview-tools label, .drawer, .skip-link, .print-control { display: none !important; }
+  .rail, .portal-bar .compact-brand, .portal-bar .menu-toggle, .portal-bar .area-name, .preview-tools label, .drawer, .skip-link, .print-control { display: none !important; }
   .portal-bar { display: block; margin: 0 0 16px; padding: 0; min-height: 0; border: 0; }
   .portal-main { margin: 0; padding: 0; }
   .receipt { box-shadow: none; max-width: none; break-inside: avoid; }
