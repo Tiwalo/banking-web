@@ -28,6 +28,7 @@ jobs:
           node -e "const { engines } = require('./package.json'); if (process.versions.node !== engines.node) process.exit(1)"
           test "$(npm --version)" = "$(node -p "require('./package.json').engines.npm")"
           npm ci
+      - run: npm run contract:check
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test

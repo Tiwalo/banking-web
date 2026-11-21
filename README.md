@@ -34,4 +34,4 @@ Run `npm run preview:design` to open the local customer and operations previews.
 
 ## Backend dependency
 
-W0 aligns with backend foundation milestone B0. It sends no banking requests and holds no credentials. W1 will pin the published [banking API contract](https://github.com/Tiwalo/banking-core-api/blob/fc06aebdc53ae2e4a28e54aaeb875294e317e8c1/api/openapi/banking-v1.yaml) at commit `fc06aebdc53ae2e4a28e54aaeb875294e317e8c1` and generate the server-side adapter types. The backend owns account authorization, posting, receipts and reconciliation.
+W1 pins the B1 banking API at version 1.1.0, revision `fc06aebdc53ae2e4a28e54aaeb875294e317e8c1`. Run `npm run contract:check` to verify the vendored spec and generated code, and `npm run test:contract` to exercise schema-validated fixtures and the server-only adapter. Use `npm run contract:generate` after deliberately updating the pin. The public site and preview require no backend credentials. Live sign-in and owned-account integration begin in W2. [Contract and integration guide](docs/adr/0002-banking-api-contract.md)

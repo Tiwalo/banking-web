@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
-test("design fixtures and protected destinations are absent from the public app", async ({ request }) => {
+test("design and contract fixtures and protected destinations are absent from the public app", async ({ request }) => {
   for (const route of ["/design-preview/", "/design-preview/main.tsx", "/dashboard", "/transfers/review", "/receipts", "/operations", "/operations/reconciliations"]) {
     const res = await request.get(route);
     expect(res.status(), route).toBe(404);
@@ -12,7 +12,7 @@ test("design fixtures and protected destinations are absent from the public app"
   const assets = (await readdir(directory, { recursive: true })).filter(file => /\.(?:js|css|map)$/.test(file));
   expect(assets.length).toBeGreaterThan(0);
   for (const file of assets) {
-    expect(await readFile(path.join(directory, file), "utf8"), file).not.toMatch(/W0-FIXTURE-|Design preview · synthetic data/);
+    expect(await readFile(path.join(directory, file), "utf8"), file).not.toMatch(/W0-FIXTURE-|Design preview · synthetic data|rcp_SYNTHETIC-/);
   }
 });
 
