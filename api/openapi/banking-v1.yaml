@@ -1,0 +1,464 @@
+openapi: 3.1.1
+info:
+  title: Tiwalo Banking API
+  version: 1.1.0
+  description: |
+    Customer API for simulated PHP deposit accounts and internal transfers, with operator reconciliation.
+    Amounts are decimal strings in centavos. Clients must preserve all digits.
+    Each operation declares its runtime availability in x-implementation-status.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: Accounts
+    description: Deposit accounts owned by the authenticated customer.
+  - name: Transfers
+    description: Internal payments initiated by the authenticated customer.
+  - name: Reconciliation
+    description: Audited access for mapped operators with the operations:investigate API client role.
+
+paths:
+  /accounts:
+    get:
+      operationId: listAccounts
+      x-implementation-status: available
+      tags: [Accounts]
+      summary: List the customer's deposit accounts
+      description: Requires the banking-core-api client role accounts:read and a mapped customer. Returns accounts in ascending account ID order. An empty page is a successful result.
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of accounts in the page.
+          schema: {type: integer, minimum: 1, maximum: 100, default: 20}
+        - name: cursor
+          in: query
+          description: Use the nextCursor from the previous page. Cursors are scoped to the authenticated customer.
+          schema: {$ref: '#/components/schemas/Cursor'}
+      responses:
+        '200':
+          description: A page of owned deposit accounts. The final page omits nextCursor.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [accounts]
+                properties:
+                  accounts:
+                    type: array
+                    maxItems: 100
+                    items: {$ref: '#/components/schemas/Account'}
+                  nextCursor: {$ref: '#/components/schemas/Cursor'}
+              example: {accounts: []}
+        '400': {$ref: '#/components/responses/InvalidRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+  /accounts/{accountId}:
+    get:
+      operationId: getAccount
+      x-implementation-status: available
+      tags: [Accounts]
+      summary: Read an owned deposit account
+      description: Requires the banking-core-api client role accounts:read and a mapped customer. Ownership is derived from the verified actor. A recipient reference grants no account read access.
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema: {$ref: '#/components/schemas/Id'}
+      responses:
+        '200':
+          description: The customer's account and available balance.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Account'}
+              example:
+                accountId: 00000000-0000-4000-8000-000000000001
+                recipientReference: rcp_demo_alder
+                status: ACTIVE
+                currency: PHP
+                availableBalanceMinor: '9007199254740993'
+        '400': {$ref: '#/components/responses/InvalidRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /transfers:
+    post:
+      operationId: createInternalTransfer
+      x-implementation-status: available
+      tags: [Transfers]
+      summary: Transfer PHP between two distinct active Tiwalo deposit accounts
+      description: |
+        The authenticated customer needs the transfers:create API client role and must own the source.
+        The destination can belong to another
+        customer and is addressed by its opaque recipient reference. The configured per-transfer
+        cap and available source funds are checked before posting.
+
+        Use one Idempotency-Key for one intent. The scope is the authenticated actor and this
+        operation. The logical request consists of the source account ID, recipient reference,
+        currency and amount. JSON whitespace and property order have no effect on that identity.
+        After authorization, the same key and logical request return the original 201 receipt and
+        Location, or the original 422 decline, even if balances subsequently change. A changed
+        logical request with the same key yields 409. Outcomes are retained for the lifetime of
+        the simulated financial history.
+
+        Following response loss, timeout or 503, retry the identical request with the original key.
+        If the transfer ID is already known, the initiating customer can also read its receipt.
+        A new key expresses a new payment intent.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Opaque, case-sensitive client-generated key. Independent operations and actors have separate key spaces.
+          schema: {type: string, minLength: 1, maxLength: 128, pattern: '^[A-Za-z0-9._~-]+$'}
+          example: demo-internal-payment-001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/TransferRequest'}
+            example:
+              sourceAccountId: 00000000-0000-4000-8000-000000000001
+              recipientReference: rcp_demo_birch
+              currency: PHP
+              amountMinor: '500000'
+      responses:
+        '201':
+          description: Posted transfer. A replay of this success returns the same status, receipt, and Location.
+          headers:
+            Location:
+              required: true
+              description: Path to the initiating customer's receipt.
+              schema: {type: string, format: uri-reference}
+              example: /api/v1/transfers/00000000-0000-4000-8000-000000000002
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TransferReceipt'}
+              examples:
+                created: {$ref: '#/components/examples/PostedReceipt'}
+                replayAfterResponseLoss: {$ref: '#/components/examples/PostedReceipt'}
+        '400': {$ref: '#/components/responses/InvalidRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409':
+          description: This actor already used the key for a different logical transfer request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+                properties:
+                  status: {const: 409}
+                  code: {const: IDEMPOTENCY_CONFLICT}
+              example:
+                type: urn:tiwalo:problem:idempotency-conflict
+                title: Idempotency key conflict
+                status: 409
+                code: IDEMPOTENCY_CONFLICT
+        '422':
+          description: |
+            Definite business decline with no financial posting. The original decline replays
+            under the same key. Codes are INSUFFICIENT_FUNDS, TRANSFER_LIMIT_EXCEEDED,
+            SAME_ACCOUNT and ACCOUNT_UNAVAILABLE. The last covers ineligible accounts and
+            unresolvable recipient references without exposing recipient details.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+                properties:
+                  status: {const: 422}
+                  code: {enum: [INSUFFICIENT_FUNDS, TRANSFER_LIMIT_EXCEEDED, SAME_ACCOUNT, ACCOUNT_UNAVAILABLE]}
+              examples:
+                insufficientFunds: {$ref: '#/components/examples/InsufficientFunds'}
+                replayAfterFunding: {$ref: '#/components/examples/InsufficientFunds'}
+        '503':
+          description: Bounded wait or transient contention. Resolve the original intent by retrying with the same key.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+                properties:
+                  status: {const: 503}
+                  code: {const: TRANSFER_BUSY}
+              example:
+                type: urn:tiwalo:problem:transfer-busy
+                title: Transfer temporarily unavailable
+                status: 503
+                code: TRANSFER_BUSY
+  /transfers/{transferId}:
+    get:
+      operationId: getTransferReceipt
+      x-implementation-status: available
+      tags: [Transfers]
+      summary: Read the initiating customer's posted transfer receipt
+      description: The initiating customer needs the transfers:read API client role and ownership of the source. The transfer ID identifies the same committed result returned by transfer creation.
+      parameters:
+        - name: transferId
+          in: path
+          required: true
+          schema: {$ref: '#/components/schemas/Id'}
+      responses:
+        '200':
+          description: The original posted receipt.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TransferReceipt'}
+              examples:
+                posted: {$ref: '#/components/examples/PostedReceipt'}
+        '400': {$ref: '#/components/responses/InvalidRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /operations/reconciliations:
+    post:
+      operationId: runReconciliation
+      x-implementation-status: available
+      tags: [Reconciliation]
+      summary: Capture an immutable reconciliation report
+      description: Requires a mapped operator and the operations:investigate role. Each empty POST starts a separate synchronous scan of one committed PostgreSQL snapshot. A zero count means all checks passed.
+      responses:
+        '201':
+          description: The report and operator audit committed. Location points to the report's findings.
+          headers:
+            Location:
+              required: true
+              schema: {type: string, format: uri-reference}
+              description: Findings page for this run.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ReconciliationRun'}
+              example: {runId: 'fe263158-be15-4d06-844a-e6ffe1f07d6b', startedAt: '2026-11-19T04:23:10Z', findingCount: 0}
+        '400': {$ref: '#/components/responses/InvalidRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '500': {$ref: '#/components/responses/ReconciliationFailure'}
+  /operations/reconciliations/{runId}/findings:
+    get:
+      operationId: listReconciliationFindings
+      x-implementation-status: available
+      tags: [Reconciliation]
+      summary: Investigate a saved reconciliation report
+      description: Requires a mapped operator and the operations:investigate role. Each lookup is audited. Findings use ascending opaque reference order and preserve the evidence observed during the run.
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema: {$ref: '#/components/schemas/Id'}
+        - name: limit
+          in: query
+          schema: {type: integer, minimum: 1, maximum: 100, default: 20}
+        - name: cursor
+          in: query
+          description: An exclusive finding reference from this report. Use nextCursor to continue.
+          schema: {$ref: '#/components/schemas/FindingReference'}
+      responses:
+        '200':
+          description: A bounded page. The final page omits nextCursor.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [runId, findings]
+                properties:
+                  runId: {$ref: '#/components/schemas/Id'}
+                  findings:
+                    type: array
+                    maxItems: 100
+                    items: {$ref: '#/components/schemas/ReconciliationFinding'}
+                  nextCursor: {$ref: '#/components/schemas/FindingReference'}
+              example:
+                runId: fe263158-be15-4d06-844a-e6ffe1f07d6b
+                findings:
+                  - reference: '931e1c4efd4082c1a4743256d87f540f26742c39a441e40877eb3766ce34468b'
+                    code: BALANCE_MISMATCH
+                    currency: PHP
+                    computedBalanceMinor: '1500'
+                    projectedBalanceMinor: '1200'
+        '400': {$ref: '#/components/responses/InvalidRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '500': {$ref: '#/components/responses/ReconciliationFailure'}
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Keycloak access token issued for this API. Customer operations require a mapped customer actor.
+  schemas:
+    ReconciliationRun:
+      type: object
+      required: [runId, startedAt, findingCount]
+      properties:
+        runId: {$ref: '#/components/schemas/Id'}
+        startedAt: {type: string, format: date-time}
+        findingCount: {type: integer, format: int64, minimum: 0}
+    FindingReference:
+      type: string
+      pattern: '^[0-9a-f]{64}$'
+      description: Opaque reference stable across runs for the same check, subject and currency.
+    EvidenceMinor:
+      type: string
+      pattern: '^(0|-?[1-9][0-9]*)$'
+      description: Exact centavos from a diagnostic calculation. Inconsistent data can produce negative or out-of-BIGINT totals.
+    ReconciliationFinding:
+      type: object
+      required: [reference, code]
+      properties:
+        reference: {$ref: '#/components/schemas/FindingReference'}
+        code:
+          type: string
+          enum: [MISSING_PROJECTION, BALANCE_MISMATCH, JOURNAL_IMBALANCE, TRANSFER_JOURNAL_MISMATCH,
+                 JOURNAL_WITHOUT_TRANSFER, MISSING_POSTING_AUDIT, POSTING_AUDIT_MISMATCH, AUDIT_WITHOUT_JOURNAL]
+        currency: {$ref: '#/components/schemas/Currency'}
+        computedBalanceMinor: {$ref: '#/components/schemas/EvidenceMinor'}
+        projectedBalanceMinor: {$ref: '#/components/schemas/EvidenceMinor'}
+        debitTotalMinor: {$ref: '#/components/schemas/EvidenceMinor'}
+        creditTotalMinor: {$ref: '#/components/schemas/EvidenceMinor'}
+      description: Balance findings include the recomputed balance and any existing projection. Journal imbalance includes both per-currency totals. Link findings carry only a reference and code.
+    Id:
+      type: string
+      format: uuid
+    RecipientReference:
+      type: string
+      minLength: 1
+      maxLength: 128
+      description: Opaque, case-sensitive payment address. Clients preserve it verbatim.
+    Cursor:
+      type: string
+      minLength: 1
+      maxLength: 512
+    Currency:
+      type: string
+      enum: [PHP]
+    MinorUnits:
+      type: string
+      minLength: 1
+      maxLength: 19
+      pattern: '^(0|[1-9][0-9]*)$'
+      description: Nonnegative centavos up to 9223372036854775807 inclusive.
+      # JSON Schema numeric bounds do not apply to strings. For 19 digits, accept
+      # prefixes below the corresponding BIGINT maximum prefix, or the maximum itself.
+      anyOf:
+        - maxLength: 18
+        - pattern: "^(?:[1-8]|9[01]|92[01]|922[0-2]|9223[0-2]|92233[0-6]|922337[01]|\
+                    92233720[0-2]|922337203[0-5]|9223372036[0-7]|92233720368[0-4]|\
+                    922337203685[0-3]|9223372036854[0-6]|92233720368547[0-6]|\
+                    922337203685477[0-4]|9223372036854775[0-7]|922337203685477580[0-7])"
+    TransferAmountMinor:
+      allOf:
+        - {$ref: '#/components/schemas/MinorUnits'}
+        - {type: string, pattern: '^[1-9]'}
+      description: Positive centavos up to 9223372036854775807 inclusive. Out-of-range values are invalid requests.
+    Account:
+      type: object
+      required: [accountId, recipientReference, status, currency, availableBalanceMinor]
+      properties:
+        accountId: {$ref: '#/components/schemas/Id'}
+        recipientReference: {$ref: '#/components/schemas/RecipientReference'}
+        status: {type: string, enum: [ACTIVE, FROZEN, CLOSED]}
+        currency: {$ref: '#/components/schemas/Currency'}
+        availableBalanceMinor: {$ref: '#/components/schemas/MinorUnits'}
+    TransferRequest:
+      type: object
+      additionalProperties: false
+      required: [sourceAccountId, recipientReference, currency, amountMinor]
+      properties:
+        sourceAccountId: {$ref: '#/components/schemas/Id'}
+        recipientReference: {$ref: '#/components/schemas/RecipientReference'}
+        currency: {$ref: '#/components/schemas/Currency'}
+        amountMinor: {$ref: '#/components/schemas/TransferAmountMinor'}
+    TransferReceipt:
+      type: object
+      required: [transferId, sourceAccountId, recipientReference, currency, amountMinor, status, postedAt]
+      properties:
+        transferId: {$ref: '#/components/schemas/Id'}
+        sourceAccountId: {$ref: '#/components/schemas/Id'}
+        recipientReference: {$ref: '#/components/schemas/RecipientReference'}
+        currency: {$ref: '#/components/schemas/Currency'}
+        amountMinor: {$ref: '#/components/schemas/TransferAmountMinor'}
+        status: {type: string, enum: [POSTED]}
+        postedAt: {type: string, format: date-time}
+    Problem:
+      type: object
+      description: RFC 9457 Problem Details. Branch on the stable code. User-facing text may change.
+      required: [type, title, status, code]
+      properties:
+        type: {type: string, format: uri}
+        title: {type: string}
+        status: {type: integer, minimum: 400, maximum: 599}
+        code: {type: string, pattern: '^[A-Z][A-Z0-9_]*$'}
+        detail: {type: string}
+        instance: {type: string, format: uri-reference}
+  examples:
+    PostedReceipt:
+      summary: A synthetic posted transfer for PHP 5,000.00
+      value:
+        transferId: 00000000-0000-4000-8000-000000000002
+        sourceAccountId: 00000000-0000-4000-8000-000000000001
+        recipientReference: rcp_demo_birch
+        currency: PHP
+        amountMinor: '500000'
+        status: POSTED
+        postedAt: '2026-11-18T02:30:00Z'
+    InsufficientFunds:
+      summary: The source had insufficient funds at the original attempt
+      value:
+        type: urn:tiwalo:problem:insufficient-funds
+        title: Insufficient funds
+        status: 422
+        code: INSUFFICIENT_FUNDS
+  responses:
+    ReconciliationFailure:
+      description: Report creation or audited access failed.
+      content:
+        application/problem+json:
+          schema: {$ref: '#/components/schemas/Problem'}
+          example: {type: 'urn:tiwalo:problem:internal-error', title: Reconciliation service error, status: 500, code: INTERNAL_ERROR}
+    InvalidRequest:
+      description: Invalid input such as a malformed ID, invalid cursor, missing key or out-of-range amount.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+            properties:
+              status: {const: 400}
+              code: {const: INVALID_REQUEST}
+          example: {type: 'urn:tiwalo:problem:invalid-request', title: Invalid request, status: 400, code: INVALID_REQUEST}
+    Unauthorized:
+      description: A valid access token for the configured issuer and audience is required.
+      headers:
+        WWW-Authenticate:
+          required: true
+          schema: {type: string}
+          example: Bearer
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+            properties:
+              status: {const: 401}
+              code: {const: UNAUTHORIZED}
+          example: {type: 'urn:tiwalo:problem:unauthorized', title: Authentication required, status: 401, code: UNAUTHORIZED}
+    Forbidden:
+      description: The verified actor lacks permission for the operation.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+            properties:
+              status: {const: 403}
+              code: {const: FORBIDDEN}
+          example: {type: 'urn:tiwalo:problem:forbidden', title: Permission denied, status: 403, code: FORBIDDEN}
+    NotFound:
+      description: The resource is absent or outside the authenticated customer's ownership. Both return the same problem.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+            properties:
+              status: {const: 404}
+              code: {const: NOT_FOUND}
+          example: {type: 'urn:tiwalo:problem:not-found', title: Resource not found, status: 404, code: NOT_FOUND}

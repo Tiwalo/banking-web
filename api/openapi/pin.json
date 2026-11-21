@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/Tiwalo/banking-core-api",
+  "revision": "fc06aebdc53ae2e4a28e54aaeb875294e317e8c1",
+  "path": "api/openapi/banking-v1.yaml",
+  "sha256": "b3247ef65918185e10281d1162407a0cb9d623a4da62ebcbc8ef89bdde16bb49",
+  "openapi": "3.1.1",
+  "apiVersion": "1.1.0"
+}

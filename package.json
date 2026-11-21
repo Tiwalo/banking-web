@@ -16,13 +16,20 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "preview:design": "vite --config design-preview/vite.config.mts",
-    "test:design": "playwright test --config playwright.design.config.ts"
+    "test:design": "playwright test --config playwright.design.config.ts",
+    "contract:generate": "node scripts/contract.mjs",
+    "contract:check": "node scripts/contract.mjs --check",
+    "test:contract": "vitest run tests/contract"
   },
   "dependencies": {
+    "ajv": "8.18.0",
+    "ajv-formats": "3.0.1",
     "lucide-react": "0.468.0",
     "next": "16.4.6",
+    "openapi-fetch": "0.17.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "server-only": "0.0.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
@@ -37,9 +44,11 @@
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.6",
     "jsdom": "31.0.1",
+    "openapi-typescript": "7.13.0",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
     "vite": "8.3.8",
-    "vitest": "5.1.1"
+    "vitest": "5.1.1",
+    "yaml": "2.8.4"
   }
 }
