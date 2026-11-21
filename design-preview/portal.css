@@ -78,6 +78,7 @@ form.form-card:not(.panel) { margin-top: 16px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (max-width: 1023px) {
   .rail { display: none; }
+  .compact-brand, .area-name, .menu-toggle { flex-shrink: 0; white-space: nowrap; }
   .compact-brand { display: inline-flex; }
   .compact-brand .brand-name { font-size: 1.4rem; }
   .compact-brand .brand-kind { font-size: .5rem; }
