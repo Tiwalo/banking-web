@@ -1,0 +1,111 @@
+.portal { --rail-width: 248px; min-height: 100vh; background: linear-gradient(155deg, var(--paper) 10%, #f4f7fb 65%, var(--ivory)); }
+.portal h1, .portal h2, .portal p, .portal dl { margin: 0; }
+.portal h1, .portal h2, .portal strong { color: var(--navy); }
+.portal h1 { font-size: clamp(1.65rem, 3vw, 2.2rem); line-height: 1.16; letter-spacing: -.045em; font-weight: 670; }
+.portal h2 { font-size: 1.13rem; line-height: 1.35; letter-spacing: -.025em; }
+.portal a:not(.action) { color: var(--peso); }
+.portal small, .portal .helper, .portal .intro { color: var(--muted); }
+.portal .intro { margin: 6px 0 24px; }
+.portal .helper, .portal small { font-size: .85rem; }
+.rail, .drawer { display: flex; flex-direction: column; background: white; padding: 32px 16px 24px; }
+.rail { position: fixed; inset: 0 auto 0 0; width: var(--rail-width); border-right: 1px solid var(--border); overflow-y: auto; }
+.rail .brand, .drawer .brand { margin: 0 16px 32px; }
+.rail nav, .drawer nav { display: grid; gap: 4px; }
+.portal nav a, .portal .logout { display: flex; align-items: center; gap: 12px; color: var(--navy); min-height: 46px; padding: 10px 16px; text-decoration: none; font-weight: 550; border-radius: var(--control-radius); }
+.portal nav a:hover, .portal .logout:hover { background: var(--mist); }
+.portal nav a[aria-current] { color: white; background: var(--peso); }
+.portal .logout { margin-top: auto; border-top: 1px solid var(--border); border-radius: 0; }
+.portal-bar { margin-left: var(--rail-width); min-height: 72px; padding: 12px clamp(24px, 4vw, 64px); display: flex; align-items: center; justify-content: space-between; gap: 12px; background: white; border-bottom: 1px solid var(--border); }
+.area-name { color: var(--navy); font-weight: 600; }
+.preview-tools, .page-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.preview-tools strong { font-size: .78rem; color: var(--violet); }
+.preview-tools select { width: auto; max-width: 100%; min-height: 36px; padding: 4px 8px; font-size: .82rem; }
+.portal-main { margin-left: var(--rail-width); padding: clamp(24px, 4vw, 64px); }
+.portal-main > div { max-width: 1200px; margin: 0 auto; min-width: 0; }
+.portal-main > div > h1 + .panel { margin-top: 24px; }
+.portal .balance-card { position: relative; isolation: isolate; overflow: hidden; background: linear-gradient(105deg, var(--peso), var(--navy)); color: white; padding: clamp(24px, 4vw, 48px); border-radius: var(--card-radius); }
+.balance-card > div { position: relative; }
+.balance-card span { font-weight: 550; }
+.balance-card .money { display: block; color: white; font-size: clamp(2rem, 4.4vw, 3.8rem); line-height: 1.17; letter-spacing: -.04em; margin: 8px 0; }
+.balance-card small { color: white; }
+.contours { position: absolute; right: 0; bottom: 0; width: 60%; height: 94%; fill: none; stroke: #b7def1; stroke-width: 1; opacity: .34; pointer-events: none; }
+.quick-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 16px 0 24px; }
+.quick-actions .action { text-align: center; min-height: 48px; }
+.panel-grid, .ops-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: 16px; }
+.ops-grid { grid-template-columns: 1.2fr 1fr; }
+.panel { min-width: 0; padding: 24px; background: white; border: 1px solid var(--border); border-radius: var(--card-radius); box-shadow: 0 3px 14px rgb(9 44 98 / 4%); }
+.panel-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+.panel-heading a { display: inline-flex; align-items: center; gap: 4px; font-size: .85rem; white-space: nowrap; }
+.panel .helper { margin-bottom: 8px; }
+.section-stack { margin-top: 24px; }
+.account-skeleton { display: grid; gap: 8px; margin-top: 16px; }
+.account-skeleton span { height: 16px; width: min(100%, 16rem); border-radius: 8px; background: var(--border); }
+.account-skeleton span + span { height: 12px; width: min(65%, 10rem); background: var(--mist); }
+.entry-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 16px 0; border-top: 1px solid var(--border); text-decoration: none; }
+a.entry-row:hover { background: var(--mist); }
+.entry-row small, .entry-row strong { display: block; }
+.entry-row strong { font-size: .925rem; }
+.icon-tile, .panel-symbol { display: inline-grid; width: 40px; height: 40px; place-content: center; color: var(--peso); background: var(--mist); border-radius: 12px; }
+.panel-symbol { margin-bottom: 16px; }
+.row-value { text-align: right; }
+.form-card { display: grid; gap: 16px; max-width: 640px; }
+form.form-card:not(.panel) { margin-top: 16px; }
+.form-card .action { justify-self: start; }
+.portal label { display: grid; gap: 6px; color: var(--ink); font-weight: 600; }
+.portal input, .portal select { min-width: 0; border: 1px solid var(--field-edge); border-radius: var(--control-radius); color: var(--ink); background: white; }
+.portal input, .form-card select { width: 100%; min-height: 44px; padding: 8px 12px; }
+.portal code, .portal dd, .portal .intro { overflow-wrap: anywhere; }
+.verbatim { white-space: pre-wrap; }
+.details > div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.details dt { color: var(--muted); }
+.details dd { margin: 0; text-align: right; font-weight: 600; min-width: 0; }
+.badge { display: inline-flex; justify-self: start; align-items: center; gap: 6px; width: fit-content; padding: 4px 10px; border-radius: 100px; font-size: .85rem; font-weight: 650; }
+.positive { background: #e7f5ec; color: #175233; }
+.pending { background: #fff4c5; color: #654c05; }
+.negative { background: #fdeceb; color: #922929; }
+.attention { background: #ffecdd; color: #813909; }
+.neutral { background: var(--mist); color: var(--navy); }
+.table-scroll { overflow-x: auto; }
+.portal table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.portal caption { text-align: left; padding-bottom: 12px; color: var(--muted); }
+.portal th, .portal td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+.portal thead { color: var(--navy); background: var(--mist); }
+.page-actions { justify-content: flex-end; margin-top: 16px; }
+.dependency { margin-top: 24px; }
+.dependency h2 { margin: 12px 0; }
+.menu-toggle, .close-menu { width: 44px; height: 44px; display: inline-grid; place-content: center; border: 1px solid var(--field-edge); border-radius: 10px; background: white; color: var(--navy); }
+.compact-brand, .menu-toggle, .drawer:not([open]) { display: none; }
+.drawer { position: fixed; inset: 0 auto 0 0; margin: 0; width: min(300px, 90vw); height: 100dvh; max-height: none; border: 0; }
+.drawer::backdrop { background: rgb(9 44 98 / 45%); }
+.close-menu { position: absolute; top: 16px; right: 16px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 1023px) {
+  .rail { display: none; }
+  .compact-brand, .area-name, .menu-toggle { flex-shrink: 0; white-space: nowrap; }
+  .compact-brand { display: inline-flex; }
+  .compact-brand .brand-name { font-size: 1.4rem; }
+  .compact-brand .brand-kind { font-size: .5rem; }
+  .menu-toggle { display: inline-grid; }
+  .portal-bar, .portal-main { margin-left: 0; }
+  .portal-bar { justify-content: flex-start; }
+  .preview-tools { margin-left: auto; }
+}
+@media (max-width: 740px) {
+  .portal-bar { flex-wrap: wrap; padding: 12px 16px; }
+  .preview-tools { width: 100%; margin: 0; gap: 8px; }
+  .portal-main { padding: 24px 16px; }
+  .quick-actions, .panel-grid, .ops-grid { grid-template-columns: 1fr; }
+  .quick-actions { gap: 8px; }
+  .panel { padding: 16px; }
+  .entry-row { gap: 8px; }
+  .table-scroll table { min-width: 32rem; }
+  .details > div { flex-wrap: wrap; }
+  .details dd { text-align: left; }
+}
+@media print {
+  body, .portal { background: white; color: black; }
+  .rail, .portal-bar .compact-brand, .portal-bar .menu-toggle, .portal-bar .area-name, .preview-tools label, .drawer, .skip-link, .print-control { display: none !important; }
+  .portal-bar { display: block; margin: 0 0 16px; padding: 0; min-height: 0; border: 0; }
+  .portal-main { margin: 0; padding: 0; }
+  .receipt { box-shadow: none; max-width: none; break-inside: avoid; }
+}
