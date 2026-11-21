@@ -25,6 +25,9 @@ Other repositories:
 
 ## 2. Agent operating procedure
 
+**Current repository phase (user-reported, verify on inspection):** The original web MVP `/plan` phase has already been completed and implementation/scaffolding code exists on `chore/web-verification`. Treat that branch as the **active continuation branch for the existing verification/design-foundation work**, not as an empty project. Do **not** rerun `create-next-app`, wipe routes, generate a parallel app, or restart W0 as though nothing is implemented. Inspect the actual branch/diff, preserve sound existing architecture, reconcile prior plan versus delivered code, and implement the agreed UX/UI vision incrementally on that branch. Do not create a new feature branch, push or merge without an explicit instruction. Once the foundation is approved/merged, future domain features may use separate short-lived branches.
+
+
 1. Inspect the repository first: `package.json`, lockfile, `src/` or `app/`, Next.js config, tests, `.env.example`, docs, and current Git branch. Preserve generator-created setup where sound. Before proposing Next.js-specific implementation details or writing code, consult the relevant installed version documentation under `node_modules/next/dist/docs/` as required by the generated Next.js agent-rules block above; do not rely on training-data assumptions.
 2. Identify the requested milestone and its matching backend milestone. Inspect the **actual pinned backend OpenAPI artifact** and any current API/client compatibility notes. Do not assume backend features exist merely because they are planned.
 3. In **planning mode**: inspect, compare options, list assumptions, dependencies, and explicit acceptance gates; **do not modify code or run destructive commands**.
@@ -142,6 +145,20 @@ Do not call W2/W3/W4/W5 integrated until the corresponding backend capability ex
 
 ## 10. Accessibility, UX, and quality standards
 
+**Approved UX direction:** The user-supplied **Tiwalo Digital Bank — MVP UX/UI Vision** and its reference mockup are the canonical design brief. Read `docs/design/TIWALO_MVP_DESIGN_SPEC.md` and `docs/design/tiwalo-mvp-ux-reference.png` if present; if absent, ask for/reference the supplied brief rather than inventing asset files. The mockup is illustrative, never authoritative backend data. The official flat navy flowing-T logo must be consistent with the mobile app. Do not recreate a logo from the screenshot or replace an approved brand asset without instruction; if no original asset exists, use a clearly temporary wordmark and flag the asset dependency.
+
+**Brand and design tokens** (preserve exact values; accessible role-specific variants are allowed if contrast is inadequate):
+
+- **Primary:** Tiwalo Navy `#092C62`; Peso Blue `#1F618D`; Sky Blue `#5DADE2`; Soft Teal `#76B5C5`.
+- **Banknote accents:** Violet `#6A3D9A`, `#A882C8`, `#7A94CC`; Green `#2E8B57`, `#8BC34A`, `#6BB5B5`; Yellow `#E6B800`, `#F4D03F`, `#B8A85A`; Orange `#E86A24`, `#F5B041`, `#8FA8BE`; Red `#C83232`, `#E87A7A`, `#B5658A`.
+- **Neutrals:** Paper White `#FFFFFF`; Banknote Ivory `#FAF8F3`; Light Blue Gray `#EEF4F9`; Border Gray `#DCE5EF`; Muted Slate `#64748B`; Deep Ink `#172B4D`.
+- **Style:** Inter typography with tabular numerals for PHP; 8px spacing rhythm; inputs/buttons ~8–12px radius; cards ~12–16px; clean information-first layouts, blue-forward controls, original subtle Philippine landscape/guilloché-inspired line art (never copied banknote security designs). Logo is **flat navy**, no gradient.
+- **Status semantics:** Green = confirmed/matched, yellow = pending/processing, red = failed/discrepancy, orange = attention, violet = supporting information. Solid accessible foreground/background combinations, text and icon labels; never color only.
+- **Customer web desktop sidebar:** Dashboard, Accounts, Send Money, Transactions, Receipts, Profile; Logout separate. Dashboard: prominent blue balance card, account overview, primary actions, conditional recent activity.
+- **Operations portal sidebar:** Operations Dashboard, Transactions, Investigation, Ledger, Reconciliation, Audit Trail, Profile if appropriate; Logout separate. Dense readable tables; minimal decoration; strictly read-only when contracted.
+- **Every visual element is backend-gated:** Illustration's sample name, figures, notification badges, merchant transactions, investigation statuses, counts and dates are conceptual placeholders. Never ship them as real data or pretend an unsupported capability exists. A missing API is a contract-gap item, not license to fake functionality. Public deployments must visibly disclose simulated banking and synthetic funds.
+
+
 - Use semantic HTML, keyboard-accessible navigation, visible focus states, accessible dialogs, readable error text, appropriate labels, and screen-reader announcements for transfer status.
 - Follow WCAG 2.2 AA as a target. Test responsive layouts for desktop, tablet, and mobile browsers. Avoid conveying money movement or errors by color alone.
 - Provide explicit loading, empty, error, expired-session, and uncertain-transfer states. Confirmation must show recipient reference, source, amount, and fees if contracted.
@@ -167,7 +184,7 @@ A feature is not complete merely because mocks pass. Clearly distinguish fixture
 
 ## 12. Git, releases, documentation, and handoff
 
-- `main` is protected; work in a short-lived branch from updated `main`. Suggested naming: `chore/web-foundation`, `feat/api-client`, `feat/web-auth`, `feat/account-dashboard`, `feat/web-transfer-flow`, `feat/operator-reconciliation`.
+- `main` is protected; preserve and continue the **existing** `chore/web-verification` branch for current UX/UI foundation follow-up (confirm the checked-out branch before editing). After its review and merge, begin new milestones in short-lived branches from updated `main`, e.g. `feat/api-client`, `feat/web-auth`, `feat/account-dashboard`, `feat/web-transfer-flow`, `feat/operator-reconciliation`.
 - Use Conventional Commits, small reviewable PRs, and squash merges when approved. Do not commit, push, force-push, merge, delete shared branches, or tag releases without user instruction.
 - Maintain `README.md`, `.env.example`, `docs/adr/`, test fixtures, contract pinning, and integration setup instructions. Never modify another repository autonomously.
 - Pin release versions independently of `banking-core-api` and `banking-mobile`; API `/api/v1` is independent of application release versions.
@@ -175,4 +192,4 @@ A feature is not complete merely because mocks pass. Clearly distinguish fixture
 
 **At the end of each task report:** (1) implemented, (2) verified commands/results, (3) backend contract revision/dependencies, (4) auth/security and transaction safety assessment, (5) open issues and next milestone.
 
-**Priority order:** financial safety > authorization/privacy > cross-repository compatibility > accessibility > testability > UX polish > feature breadth.
+**Priority order:** financial safety > authorization/privacy > cross-repository compatibility > accessibility > testability > faithful approved design > feature breadth. The visual design must never weaken financial safety.

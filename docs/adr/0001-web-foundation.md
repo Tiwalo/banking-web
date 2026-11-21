@@ -4,7 +4,7 @@ Accepted for W0.
 
 ## Runtime and assets
 
-Keep the root Next.js App Router, React, strict TypeScript and Tailwind/Turbopack scaffold. Pin Node 24.22.3 LTS, npm 11.19.1 and the matching Next.js ESLint preset. Install with the committed npm lockfile. Use system fonts and two locally optimized WebP sizes of an original AI-generated Cordillera landscape illustration. These assets require no external requests during a build or page visit.
+Keep the root Next.js App Router, React, strict TypeScript and Tailwind/Turbopack scaffold. Pin Node 24.22.3 LTS, npm 11.19.1 and the matching Next.js ESLint preset. Install with the committed npm lockfile. Use the self-hosted Inter 4.1 variable font (with a system fallback) and two locally optimized WebP sizes of an original AI-generated Cordillera landscape illustration. These assets require no external requests during a build or page visit.
 
 ## Rendering and browser policy
 

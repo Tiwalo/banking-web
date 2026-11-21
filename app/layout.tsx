@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { Wordmark } from "../components/Wordmark";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Tiwalo | Philippine banking simulation",
+  title: "Tiwalo Digital Bank | Philippine banking simulation",
   description: "A Philippine banking project using synthetic customers and fictional pesos.",
 };
 
@@ -19,7 +20,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <header className="masthead">
           <div className="frame masthead-inner">
             <Link className="wordmark" href="/" aria-label="Tiwalo home">
-              Tiwalo<span aria-hidden="true">.</span>
+              <Wordmark />
             </Link>
             <nav aria-label="Main navigation">
               <Link href="/#about">About the simulation</Link>

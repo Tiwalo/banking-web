@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Open [the local site](http://localhost:3000). The public page works without Keycloak, Spring, a database or an environment file. The illustration and fonts are served locally or supplied by the operating system. See [.env.example](.env.example) for optional development settings and planned server-only variables.
+Open [the local site](http://localhost:3000). The public page works without Keycloak, Spring, a database or an environment file. The illustration and Inter font are served locally. See [.env.example](.env.example) for optional development settings and planned server-only variables.
 
 ## Verify the foundation
 
@@ -27,6 +27,10 @@ npm run test:e2e
 On Windows or macOS, use `npm exec -- playwright install chromium` for browser installation. Playwright starts the production server on loopback port 3100 and shuts it down after the tests. Keep that port available. The suite checks keyboard navigation, narrow-screen reflow, accessible content, the 404 response and CSP enforcement. Vitest covers public components and the error retry action.
 
 The [verification workflow](.github/workflows/verify.yml) runs these checks on Linux for pull requests and pushes to main. Production uses `npm run build` followed by `npm start` behind an HTTPS reverse proxy. See the [foundation decision](docs/adr/0001-web-foundation.md) for the rendering and deployment requirements.
+
+## Design preview
+
+Run `npm run preview:design` to open the local customer and operations previews. Run `npm run test:design` for the separate fixture-only browser suite and screenshot artifacts. [Preview guide](docs/design/W0-preview.md) · [Approved design](docs/design/TIWALO_MVP_DESIGN_SPEC.md).
 
 ## Backend dependency
 

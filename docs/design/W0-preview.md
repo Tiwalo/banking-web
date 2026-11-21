@@ -1,0 +1,11 @@
+# W0 design preview
+
+Run `npm run preview:design` and open `http://127.0.0.1:4173`. The Vite development entry lives outside the Next App Router. Dashboard navigation and the preview screen selector use hash routes. No service credentials are required. All example identities, amounts, findings and receipts are synthetic. Reloading resets edited payment details.
+
+The public site uses a temporary navy text wordmark pending a shared approved flowing-T source. InterVariable.woff2 and its OFL license come from rsms/inter v4.1. Lucide outline icons are pinned in the lockfile and distributed with their upstream license. The balance card uses original contour paths. Preview and public pages share the same font and semantic colors. Light source accents are decorative; darker text, icons and labels communicate statuses.
+
+The reviewed backend contract is OpenAPI 1.1.0 at `fc06aebdc53ae2e4a28e54aaeb875294e317e8c1` (OpenAPI format 3.1.1). W1 will vendor and verify it. W0 presents a single account's available PHP balance. Display uses exact decimal-string centavos. The live backend owns account access, transfers and read-only findings. The isolated preview demonstrates a known-run lookup and manual paging. The history sample explicitly identifies its missing API. Portfolio totals, recipient names, account history, case lifecycle, ledger details, operational KPIs and audit listings await contracts.
+
+Submit preview stops at a submitting example. Choose uncertain, declined or posted receipt separately using the screen selector. W2 gates real login and role boundaries. W4 gates real idempotency and outcome recovery. W5 gates audited operator reads. No preview state is a production session, balance or posting.
+
+Run `npm run test:design` after installing Playwright Chromium. The suite writes screenshots under `test-results/design/`. CI uploads only these synthetic PNGs. Production verification separately checks that preview destinations return 404, bundled static assets exclude fixture markers, and Inter loads from the application origin. Revert to the preceding public build for rollback. W0 has no database migrations.
