@@ -1,8 +1,12 @@
 import "server-only";
+import { trustedUrl } from "./server";
 
 export function acceptsForm(request: Request) {
-  const origin = process.env.APP_ORIGIN;
-  return Boolean(origin) && request.headers.get("origin") === origin;
+  try {
+    return request.headers.get("origin") === trustedUrl("APP_ORIGIN").origin;
+  } catch {
+    return false;
+  }
 }
 
 export function leave(location: string, headers: Headers) {

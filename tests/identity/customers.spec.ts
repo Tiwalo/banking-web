@@ -2,8 +2,12 @@ import { expect, test, type Page } from "@playwright/test";
 import { Pool } from "pg";
 
 async function login(page: Page, username: string, password: string | undefined) {
-  if (!password) throw new Error("Set the local test password for " + username);
   await page.goto("/sign-in");
+  await continueLogin(page, username, password);
+}
+
+async function continueLogin(page: Page, username: string, password: string | undefined) {
+  if (!password) throw new Error("Set the local test password for " + username);
   await page.getByRole("button", { name: "Continue with Keycloak" }).click();
   await page.waitForURL(url => url.origin === "http://localhost:8180" && url.pathname.startsWith("/realms/tiwalo/"));
   await page.locator("#username").fill(username);
@@ -37,9 +41,18 @@ test("two synthetic customers read their own accounts, deny cross-owner reads, a
       if (new URL(page.url()).origin === "http://localhost:8180") await page.locator("#kc-logout").click();
       await expect(page.getByRole("heading", { name: "You’re signed out" })).toBeVisible();
       // A second tab or retained cookie must also lose access on the server.
-      await context.addCookies(beforeLogout);
-      await page.goto("/dashboard");
-      await expect(page.getByRole("heading", { name: "Customer sign-in" })).toBeVisible();
+      const replay = await browser.newContext({ baseURL: "http://localhost:3000" });
+      try {
+        await replay.addCookies(beforeLogout);
+        const replayPage = await replay.newPage();
+        await replayPage.goto("/dashboard");
+        await expect(replayPage.getByRole("heading", { name: "Customer sign-in" })).toBeVisible();
+      } finally {
+        await replay.close();
+      }
+      await page.getByRole("link", { name: "Sign in again" }).click();
+      await continueLogin(page, customer.name, customer.password);
+      await expect(page.locator('a[href^="/accounts/"]')).toHaveAttribute("href", "/accounts/" + customer.id);
     } finally {
       await context.close();
     }
