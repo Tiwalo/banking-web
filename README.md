@@ -1,6 +1,6 @@
 # Tiwalo banking web
 
-Tiwalo is a simulated Philippine banking project using fictional balances and synthetic customers. W0 delivers a public introduction, an accessible site shell and production browser verification. Sign-in, account access and transfers are planned integrations.
+Tiwalo is a simulated Philippine banking project using fictional balances and synthetic customers. The web app provides a public introduction and a private, read-only customer account dashboard. For local sign-in, follow the [W2 setup and verification instructions](docs/adr/0003-web-sessions.md).
 
 ## Run locally
 
@@ -34,4 +34,4 @@ Run `npm run preview:design` to open the local customer and operations previews.
 
 ## Backend dependency
 
-W1 pins the B1 banking API at version 1.1.0, revision `fc06aebdc53ae2e4a28e54aaeb875294e317e8c1`. Run `npm run contract:check` to verify the vendored spec and generated code, and `npm run test:contract` to exercise schema-validated fixtures and the server-only adapter. Use `npm run contract:generate` after deliberately updating the pin. The public site and preview require no backend credentials. Live sign-in and owned-account integration begin in W2. [Contract and integration guide](docs/adr/0002-banking-api-contract.md)
+W1 pins the B1 banking API at version 1.1.0, revision `fc06aebdc53ae2e4a28e54aaeb875294e317e8c1`. Run `npm run contract:check` to verify the vendored spec and generated code, and `npm run test:contract` to exercise schema-validated fixtures and the server-only adapter. Use `npm run contract:generate` after deliberately updating the pin. [Contract and integration guide](docs/adr/0002-banking-api-contract.md)
