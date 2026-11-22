@@ -9,6 +9,8 @@
   },
   "scripts": {
     "dev": "next dev",
+    "auth:migrate": "node --env-file-if-exists=.env.local scripts/auth-migrate.mjs",
+    "test:identity": "node --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test --config playwright.identity.config.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings 0",
@@ -24,9 +26,12 @@
   "dependencies": {
     "ajv": "8.18.0",
     "ajv-formats": "3.0.1",
+    "better-auth": "1.7.27",
+    "jose": "6.2.18",
     "lucide-react": "0.468.0",
     "next": "16.4.6",
     "openapi-fetch": "0.17.0",
+    "pg": "8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "0.0.1"
@@ -39,6 +44,7 @@
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.13",
     "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "eslint": "9.39.5",

@@ -35,10 +35,7 @@ export default function Home() {
             bank investigations. All balances are fictional. The simulation cannot
             accept deposits or move real money.
           </p>
-          <p>
-            This release opens the public site. Customer sign-in and account
-            access are in development.
-          </p>
+          <p><a className="action" href="/sign-in">Customer sign-in</a></p>
         </div>
       </section>
     </>
