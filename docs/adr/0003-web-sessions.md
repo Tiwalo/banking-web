@@ -19,6 +19,8 @@ Better Auth exchanges the Keycloak authorization code using PKCE, verifies the p
 
 ## Live acceptance
 
+When Better Auth reports `FAILED_TO_GET_ACCESS_TOKEN`, the dashboard and account detail stop before calling Spring. Both pages offer a retry of the same read and a fresh Keycloak sign-in. The provider error can describe either a temporary outage or a credential that requires another login.
+
 With the local development server running, set `W2_CUSTOMER_1_PASSWORD`, `W2_CUSTOMER_2_PASSWORD`, and `W2_OPERATOR_PASSWORD` for the seeded synthetic logins in the ignored `.env.local`. Run `npm run test:identity`. This separate Playwright suite signs in against the local realm and expires only its own test session. It expects the two standard seeded account IDs.
 
 In separate browser profiles, sign in as each synthetic customer. Compare the masked reference on the dashboard with that customer’s API result. Open account details, then visit the other customer’s detail URL and confirm the account data stays hidden. Sign in as the operator and confirm the dashboard shows access denied. Log out, complete Keycloak’s confirmation, and revisit a detail URL. Repeat after session expiry. The browser should return to sign-in. Check for private/no-store responses and a session cookie with HttpOnly and SameSite=Lax. The callback and redirect never need client-side access to a bearer token.

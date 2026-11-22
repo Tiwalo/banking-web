@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { customerAccounts } from "@/lib/auth/accounts";
+import { AccountAccessRecovery } from "@/components/AccountAccessRecovery";
 
 export default async function Dashboard({ searchParams }: PageProps<"/dashboard">) {
   const api = await customerAccounts();
   const { cursor } = await searchParams;
+  if (!api) return <AccountAccessRecovery retryHref={typeof cursor === "string" ? "/dashboard?" + new URLSearchParams({ cursor }) : "/dashboard"} />;
   const page = await api.listAccounts(typeof cursor === "string" ? { cursor } : {});
   if (!page.ok && page.status === 401) redirect("/sign-in?expired=1");
   if (!page.ok && page.status === 403) redirect("/access-denied");
