@@ -25,7 +25,7 @@ export function proxy(request: NextRequest) {
   const response = NextResponse.next({ request: { headers } });
   response.headers.set("Content-Security-Policy", policy);
   // Native same-origin form POSTs need an Origin for CSRF verification.
-  if (signInForm) response.headers.set("Referrer-Policy", "same-origin");
+  if (signInForm || request.nextUrl.pathname.startsWith("/transfers/")) response.headers.set("Referrer-Policy", "same-origin");
   response.headers.set("Cache-Control", "private, no-store");
   return response;
 }

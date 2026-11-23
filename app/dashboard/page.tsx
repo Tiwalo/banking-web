@@ -1,19 +1,24 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { customerAccounts } from "@/lib/auth/accounts";
+import { verifiedCustomer } from "@/lib/auth/accounts";
+import { unresolvedPayments } from "@/lib/transfers/drafts";
 import { AccountAccessRecovery } from "@/components/AccountAccessRecovery";
 import { BalanceCard } from "@/components/BankingPanels";
 
 export default async function Dashboard({ searchParams }: PageProps<"/dashboard">) {
-  const api = await customerAccounts();
+  const customer = await verifiedCustomer();
   const { cursor } = await searchParams;
   const currentPage = typeof cursor === "string" ? "/dashboard?" + new URLSearchParams({ cursor }) : "/dashboard";
-  if (!api) return <AccountAccessRecovery retryHref={currentPage} />;
-  const page = await api.listAccounts(typeof cursor === "string" ? { cursor } : {});
+  if (!customer) return <AccountAccessRecovery retryHref={currentPage} />;
+  const page = await customer.api.listAccounts(typeof cursor === "string" ? { cursor } : {});
+  const pending = customer.canPreparePayment ? await unresolvedPayments(customer.actor) : [];
   if (!page.ok && page.status === 401) redirect("/sign-in?expired=1");
   if (!page.ok && page.status === 403) redirect("/access-denied");
   return <section className="account-view"><h1>Your accounts</h1>
     <p>Simulated banking · fictional funds</p>
+    {customer.canReadReceipts && <Link prefetch={false} href="/receipts">Find a payment receipt</Link>}
+    {pending.length > 0 && <section><h2>Payments needing attention</h2><ul>{pending.map(({ id }) =>
+      <li key={id}><a href={"/transfers/review/" + id}>Check payment ending in {id.slice(-6)}</a></li>)}</ul></section>}
     {page.ok ? <>
       {page.data.accounts.length ? <ul className="account-grid">{page.data.accounts.map(account => <li key={account.accountId}>
         <BalanceCard reference={account.recipientReference} minor={account.availableBalanceMinor} />
