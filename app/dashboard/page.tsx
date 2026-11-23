@@ -6,7 +6,7 @@ import { AccountAccessRecovery } from "@/components/AccountAccessRecovery";
 import { BalanceCard } from "@/components/BankingPanels";
 
 export default async function Dashboard({ searchParams }: PageProps<"/dashboard">) {
-  const customer = await verifiedCustomer();
+  const customer = await verifiedCustomer("accounts:read", true);
   const { cursor } = await searchParams;
   const currentPage = typeof cursor === "string" ? "/dashboard?" + new URLSearchParams({ cursor }) : "/dashboard";
   if (!customer) return <AccountAccessRecovery retryHref={currentPage} />;
