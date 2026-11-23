@@ -11,6 +11,7 @@
     "dev": "next dev",
     "auth:migrate": "node --env-file-if-exists=.env.local scripts/auth-migrate.mjs",
     "test:identity": "node --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test --config playwright.identity.config.ts",
+    "test:recovery": "node --env-file-if-exists=.env.local node_modules/vitest/vitest.mjs run --config vitest.recovery.config.mts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings 0",

@@ -94,11 +94,74 @@ test("two synthetic customers read their own accounts, deny cross-owner reads, a
   }
 });
 
+test("a customer can save, reload and revise a payment review without submitting funds", async ({ page, browser }) => {
+  await login(page, "demo-customer", process.env.W2_CUSTOMER_1_PASSWORD);
+  await page.locator('a[href^="/accounts/"]').first().click();
+  await page.getByRole("link", { name: "Send money" }).click();
+  const reference = "rcp_W4_Verbatim";
+  await page.getByLabel("Recipient reference").fill(reference);
+  await page.getByLabel("Amount (PHP)").fill("0.01");
+  await page.getByRole("button", { name: "Review payment" }).click();
+  await expect(page.getByRole("heading", { name: "Review payment" })).toBeVisible({ timeout: 30_000 });
+  const original = page.url();
+  await page.reload();
+  await expect(page.getByText("₱0.01", { exact: true })).toBeVisible();
+  await expect(page.getByText(reference, { exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Edit payment" }).click();
+  await expect(page.getByLabel("Recipient reference")).toHaveValue(reference);
+  await page.getByLabel("Amount (PHP)").fill("90071992547409.93");
+  await page.getByRole("button", { name: "Review payment" }).click();
+  await expect(page.getByText("₱90,071,992,547,409.93", { exact: true })).toBeVisible();
+  expect(page.url()).not.toBe(original);
+  const other = await browser.newPage({ baseURL: "http://localhost:3000" });
+  try {
+    await login(other, "demo-customer-2", process.env.W2_CUSTOMER_2_PASSWORD);
+    await expect(other.getByRole("heading", { name: "Your accounts" })).toBeVisible();
+    await other.goto(original);
+    await expect(other.getByRole("heading", { name: /Page not found|Customer access denied/ })).toBeVisible();
+    await expect(other.getByText(reference, { exact: true })).toHaveCount(0);
+  } finally {
+    await other.close();
+  }
+});
+
 test("the operator cannot open a customer account", async ({ page }) => {
   await login(page, "demo-operator", process.env.W2_OPERATOR_PASSWORD);
   await expect(page.getByRole("heading", { name: "Customer access denied" })).toBeVisible();
   await page.goto("/accounts/9e4777f9-8de5-462c-8366-9d8aa9766096");
   await expect(page.getByRole("heading", { name: "Customer access denied" })).toBeVisible();
+});
+
+test("an explicit synthetic one-cent payment produces a receipt and refreshes the source balance", async ({ page, context }) => {
+  test.skip(process.env.W4_LIVE_CENT !== "1", "Opt in to a one-cent transfer between the two local seed accounts.");
+  await login(page, "demo-customer", process.env.W2_CUSTOMER_1_PASSWORD);
+  await page.locator('a[href^="/accounts/"]').first().click();
+  const balance = await page.getByRole("region", { name: "Available balance" }).locator(".money").innerText();
+  const before = BigInt(balance.replace(/[₱,.\s]/g, ""));
+  expect(before, "Fund the first synthetic account with at least one cent before this opt-in check.").toBeGreaterThan(BigInt(0));
+  await page.getByRole("link", { name: "Send money" }).click();
+  await page.getByLabel("Recipient reference").fill("rcp_24bf04e6bd8b4a39bbd3c8f3a8fa1245");
+  await page.getByLabel("Amount (PHP)").fill("0.01");
+  await page.getByRole("button", { name: "Review payment" }).click();
+  await expect(page.getByRole("heading", { name: "Review payment" })).toBeVisible();
+  const other = await context.newPage();
+  await other.goto(page.url());
+  await Promise.all([page, other].map(async tab => {
+    const submitted = tab.waitForResponse(response => response.request().method() === "POST" && response.url() === tab.url());
+    await tab.getByRole("button", { name: "Submit payment" }).click();
+    await (await submitted).finished();
+  }));
+  for (const tab of [page, other]) {
+    await tab.reload();
+    await expect(tab.getByRole("heading", { name: "Payment receipt" })).toBeVisible();
+    await expect(tab.locator("dt", { hasText: "Current available balance" }).locator("+ dd")).toHaveText(formatPhp(String(before - BigInt(1))));
+  }
+  expect(await other.locator("dt", { hasText: "Transfer ID" }).locator("+ dd").innerText())
+    .toBe(await page.locator("dt", { hasText: "Transfer ID" }).locator("+ dd").innerText());
+  await page.getByRole("link", { name: "Look up a receipt" }).click();
+  await expect(page).toHaveURL(/\/receipts\/[a-f0-9-]+$/);
+  await expect(page.getByRole("heading", { name: "Payment receipt" })).toBeVisible();
+  await expect(page.getByText("₱0.01", { exact: true })).toBeVisible();
 });
 
 test("expiry of the current test session requires a new sign-in", async ({ page, context }) => {

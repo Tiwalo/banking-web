@@ -34,6 +34,16 @@ Run `npm run preview:design` to open the local customer and operations previews.
 
 ## Backend dependency
 
+### W4 internal transfers
+
+Run `npm run auth:migrate` before starting the web app. Open an owned account as a customer with `accounts:read` and `transfers:create`, choose **Send money**, enter the exact recipient reference and PHP amount, and review before submitting. A verified Spring receipt confirms posting and the account balance is read again. Customers with `transfers:read` can retrieve an owned receipt by transfer ID.
+
+The restricted web schema stores the exact request, key and any verified receipt in actor-bound AES-GCM ciphertext. Unsent drafts expire after 24 hours. Editing starts a new review. Submission saves the uncertain state before contacting Spring. The dashboard links unresolved payments after sign-in. An explicit retry reuses the original payload and key. If a process stops during submission, the retry becomes available after 30 seconds. A key conflict stops submission. Unresolved attempts have no automatic expiry. Terminal results expire after 24 hours. Preserve the encryption secret while recoverable attempts exist.
+
+For the live two-tab check, set `W4_LIVE_CENT=1` for the test process before running `npm run test:identity`. It sends one fictional cent from the first synthetic seed account to the second and checks the receipt and refreshed source balance.
+
+To check recovery after a lost Spring response, fund the first seed account with one fictional cent, set `W4_LIVE_RECOVERY=1` for the test process, and run `npm run test:recovery` with the local web app, Keycloak and Spring running. The test drops the real posting response at the server adapter, signs out, signs in with a fresh browser session, and explicitly retries the original payment. It verifies the original transfer ID, the receipt lookup, and exactly one cent debited.
+
 W3 displays each owned account’s available balance from the B3 ledger-backed account API. Refresh on the dashboard or account detail makes a fresh authenticated read. Both views format decimal-string centavos directly. Run `npm run test:identity` with the local W2 setup. For an independent comparison, set `W3_CUSTOMER_1_MINOR` and `W3_CUSTOMER_2_MINOR` to the seeded accounts’ current ledger projections before running the suite.
 
 W1 pins the B1 banking API at version 1.1.0, revision `fc06aebdc53ae2e4a28e54aaeb875294e317e8c1`. Run `npm run contract:check` to verify the vendored spec and generated code, and `npm run test:contract` to exercise schema-validated fixtures and the server-only adapter. Use `npm run contract:generate` after deliberately updating the pin. [Contract and integration guide](docs/adr/0002-banking-api-contract.md)

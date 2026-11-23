@@ -17,15 +17,22 @@ export function trustedUrl(name: string) {
   return url;
 }
 
+let database: Pool | undefined;
+export function webDatabase() {
+  if (!database) {
+    database = new Pool({ connectionString: required("WEB_DATABASE_URL"), options: "-c search_path=tiwalo_web", max: 5 });
+    database.on("error", () => console.error("An idle web session database connection was lost."));
+  }
+  return database;
+}
+
 function configure() {
   const origin = trustedUrl("APP_ORIGIN").origin;
   const issuer = trustedUrl("KEYCLOAK_ISSUER").href.replace(/\/$/, "");
-  const database = new Pool({ connectionString: required("WEB_DATABASE_URL"), options: "-c search_path=tiwalo_web", max: 5 });
-  database.on("error", () => console.error("An idle web session database connection was lost."));
   return betterAuth({
     baseURL: origin,
     secret: required("BETTER_AUTH_SECRET"),
-    database,
+    database: webDatabase(),
     trustedOrigins: [origin],
     logger: { disabled: true },
     account: { encryptOAuthTokens: true, storeAccountCookie: false, storeStateStrategy: "database", accountLinking: { enabled: false } },

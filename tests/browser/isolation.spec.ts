@@ -3,7 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 test("design and contract fixtures and protected destinations are absent from the public app", async ({ request }) => {
-  for (const route of ["/design-preview/", "/design-preview/main.tsx", "/transfers/review", "/receipts", "/operations", "/operations/reconciliations", "/api/auth/get-access-token"]) {
+  for (const route of ["/design-preview/", "/design-preview/main.tsx", "/transfers/review", "/operations", "/operations/reconciliations", "/api/auth/get-access-token"]) {
     const res = await request.get(route);
     expect(res.status(), route).toBe(404);
     expect(res.headers()["content-security-policy"]).toContain("'nonce-");

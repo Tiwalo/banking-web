@@ -9,7 +9,7 @@ import { canReadCustomerAccounts } from "./customer-role";
 import { auth, required, trustedUrl } from "./server";
 
 let keys: ReturnType<typeof createRemoteJWKSet>;
-export async function customerAccounts() {
+export async function verifiedCustomer(permission: "accounts:read" | "transfers:create" | "transfers:read" = "accounts:read") {
   const requestHeaders = await headers();
   if (!getSessionCookie(requestHeaders)) redirect("/sign-in");
   const session = await auth().api.getSession({ headers: requestHeaders });
@@ -17,6 +17,8 @@ export async function customerAccounts() {
   const issuer = trustedUrl("KEYCLOAK_ISSUER").href.replace(/\/$/, "");
   let token: string;
   let allowed: boolean;
+  let canPreparePayment: boolean;
+  let canReadReceipts: boolean;
   try {
     const accounts = await auth().api.listUserAccounts({ headers: requestHeaders });
     const account = accounts.find(item => item.providerId === "keycloak");
@@ -27,9 +29,11 @@ export async function customerAccounts() {
     const { payload } = await jwtVerify(token, keys, {
       issuer, audience: "banking-core-api", algorithms: ["RS256"], requiredClaims: ["exp", "sub", "azp"],
     });
+    canPreparePayment = canReadCustomerAccounts({ resource_access: payload.resource_access }, "transfers:create");
+    canReadReceipts = canReadCustomerAccounts({ resource_access: payload.resource_access }, "transfers:read");
     allowed = payload.azp === required("KEYCLOAK_CLIENT_ID") &&
       account.accountId === payload.sub &&
-      canReadCustomerAccounts({ resource_access: payload.resource_access });
+      canReadCustomerAccounts({ resource_access: payload.resource_access }, permission);
   } catch (error) {
     // Better Auth uses this code for both refresh outages and revoked credentials.
     if (error instanceof APIError && error.statusCode === 400 &&
@@ -42,5 +46,9 @@ export async function customerAccounts() {
     throw new Error("Identity verification is temporarily unavailable.");
   }
   if (!allowed) redirect("/access-denied");
-  return createCustomerApi({ accessToken: token });
+  return { actor: session.user.id, canPreparePayment, canReadReceipts, api: createCustomerApi({ accessToken: token }) };
+}
+
+export async function customerAccounts() {
+  return (await verifiedCustomer())?.api ?? null;
 }
