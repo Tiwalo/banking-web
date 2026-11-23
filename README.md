@@ -34,4 +34,6 @@ Run `npm run preview:design` to open the local customer and operations previews.
 
 ## Backend dependency
 
+W3 displays each owned account’s available balance from the B3 ledger-backed account API. Refresh on the dashboard or account detail makes a fresh authenticated read. Both views format decimal-string centavos directly. Run `npm run test:identity` with the local W2 setup. For an independent comparison, set `W3_CUSTOMER_1_MINOR` and `W3_CUSTOMER_2_MINOR` to the seeded accounts’ current ledger projections before running the suite.
+
 W1 pins the B1 banking API at version 1.1.0, revision `fc06aebdc53ae2e4a28e54aaeb875294e317e8c1`. Run `npm run contract:check` to verify the vendored spec and generated code, and `npm run test:contract` to exercise schema-validated fixtures and the server-only adapter. Use `npm run contract:generate` after deliberately updating the pin. [Contract and integration guide](docs/adr/0002-banking-api-contract.md)

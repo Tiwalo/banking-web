@@ -39,6 +39,10 @@ const typeInput = JSON.parse(JSON.stringify(spec, (_key, node) => {
   const { $ref, ...constraints } = node;
   return { allOf: [{ $ref }, { type: "object", ...constraints }] };
 }));
+// MinorUnits restricts a string using untyped anyOf bounds. Repeat the parent
+// type in those branches so openapi-typescript does not widen them to unknown.
+const minorUnits = typeInput.components.schemas.MinorUnits;
+minorUnits.anyOf = minorUnits.anyOf.map(bound => ({ type: minorUnits.type, ...bound }));
 await output("banking.d.ts", header + astToString(await openapiTS(typeInput)));
 
 // Compile only the wire shapes used by the adapter. Runtime validation needs no YAML or code generation.

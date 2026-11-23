@@ -1,0 +1,66 @@
+@font-face {
+  font-family: Inter;
+  src: url("../fonts/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+.login-pf body, .pf-v5-c-login {
+  font-family: Inter, system-ui, sans-serif;
+  color: #172b4d;
+  background: #faf8f3;
+}
+.pf-v5-c-login {
+  min-height: 100vh;
+  padding: clamp(16px, 4vw, 64px);
+}
+.pf-v5-c-login__container {
+  width: min(100%, 60rem);
+  margin: auto;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "header main";
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid #dce5ef;
+  border-radius: 16px;
+  background: white;
+}
+.pf-v5-c-login__header {
+  margin: 0;
+  padding: clamp(24px, 4vw, 48px);
+  background: #eef4f9 url("../img/terraces.webp") center bottom / 100% auto no-repeat;
+}
+#kc-header #kc-header-wrapper {
+  /* The parent theme uses this token in an important wordmark color rule. */
+  --pf-v5-global--Color--light-100: #092c62;
+  display: block;
+  width: auto;
+  color: #092c62;
+  font: 750 2.5rem/1 Inter, system-ui, sans-serif;
+  letter-spacing: -.06em;
+  text-transform: none;
+}
+#kc-header-wrapper span {
+  display: block;
+  margin-top: 8px;
+  font-size: .75rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+.pf-v5-c-login__main { box-shadow: none; min-width: 0; }
+.pf-v5-c-login__main-header { border: 0; padding-top: 48px; }
+#kc-page-title { color: #092c62; font: 650 clamp(1.6rem, 4vw, 2.25rem)/1.2 Inter, sans-serif; letter-spacing: -.04em; }
+.pf-v5-c-form-control, .pf-v5-c-button { border-radius: 10px; }
+.pf-v5-c-form-control { border: 1px solid #64748b; background: white; }
+.pf-v5-c-form-control::after, .pf-v5-c-form-control::before { border: 0; }
+.pf-v5-c-form-control input { min-height: 44px; }
+#kc-login, #kc-logout { min-height: 48px; background: #1f618d; color: white; font-weight: 650; }
+#kc-login:hover, #kc-logout:hover { background: #092c62; }
+:focus-visible { outline: 3px solid #1f618d; outline-offset: 2px; }
+.tiwalo-disclosure { margin: 16px 0 24px; padding-inline: 24px; color: #465b72; font-size: .875rem; text-align: center; }
+@media (max-width: 700px) {
+  .pf-v5-c-login__container { max-width: 30rem; grid-template-columns: minmax(0, 1fr); grid-template-areas: "header" "main"; }
+  .pf-v5-c-login__header { background-size: auto 185%; background-position: right bottom; }
+  .pf-v5-c-login__main-header { padding-top: 24px; }
+}

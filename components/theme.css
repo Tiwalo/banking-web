@@ -31,3 +31,9 @@ button, input, select { font: inherit; }
 .action.secondary:hover { background: var(--mist); }
 .money { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+.balance-card { position: relative; isolation: isolate; overflow: hidden; background: linear-gradient(105deg, var(--peso), var(--navy)); color: white; padding: clamp(24px, 4vw, 48px); border-radius: var(--card-radius); }
+.balance-card > div { position: relative; }
+.balance-card span { font-weight: 550; }
+.balance-card .money { display: block; color: white; font-size: clamp(2rem, 4.4vw, 3.8rem); line-height: 1.17; letter-spacing: -.04em; margin: 8px 0; }
+.balance-card > div small { color: white; }
+.contours { position: absolute; right: 0; bottom: 0; width: 60%; height: 94%; fill: none; stroke: #b7def1; stroke-width: 1; opacity: .34; pointer-events: none; }

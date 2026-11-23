@@ -19,6 +19,12 @@ Better Auth exchanges the Keycloak authorization code using PKCE, verifies the p
 
 ## Live acceptance
 
+### Tiwalo login theme
+
+From PowerShell in the web checkout, run `./scripts/install-login-theme.ps1` after creating or recreating the local Keycloak container. In the `tiwalo` realm, open **Clients → tiwalo-web → Settings**, select **tiwalo** for **Login theme**, and save. The theme extends the form controls supplied by Keycloak 26.8.2 and bundles local Inter and terrace artwork. For deployment, include the installed theme directory in the Keycloak image before selecting it on the web client. Clear the client theme selection to restore the realm default.
+
+The landing page’s **Sign in** action opens the Tiwalo credential form. The browser posts credentials directly to Keycloak. Expired sessions and failed sign-ins offer an explicit retry. Browsers with JavaScript disabled can use the sign-in button on the handoff page.
+
 When Better Auth reports `FAILED_TO_GET_ACCESS_TOKEN`, the dashboard and account detail stop before calling Spring. Both pages offer a retry of the same read and a fresh Keycloak sign-in. The provider error can describe either a temporary outage or a credential that requires another login.
 
 With the local development server running, set `W2_CUSTOMER_1_PASSWORD`, `W2_CUSTOMER_2_PASSWORD`, and `W2_OPERATOR_PASSWORD` for the seeded synthetic logins in the ignored `.env.local`. Run `npm run test:identity`. This separate Playwright suite signs in against the local realm and expires only its own test session. It expects the two standard seeded account IDs.
