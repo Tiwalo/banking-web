@@ -8,9 +8,7 @@ export default function Home() {
             Tiwalo is a digital banking project built around fictional customers
             and Philippine pesos.
           </p>
-          <a className="action" href="https://github.com/Tiwalo/banking-web">
-            Explore the project <span aria-hidden="true">↗</span>
-          </a>
+          <a className="action" href="/sign-in">Sign in</a>
         </div>
         <picture>
           <source
@@ -35,7 +33,7 @@ export default function Home() {
             bank investigations. All balances are fictional. The simulation cannot
             accept deposits or move real money.
           </p>
-          <p><a className="action" href="/sign-in">Customer sign-in</a></p>
+          <p><a href="https://github.com/Tiwalo/banking-web">Explore the project</a></p>
         </div>
       </section>
     </>

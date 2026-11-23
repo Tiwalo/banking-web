@@ -169,7 +169,7 @@ export interface components {
         /** @enum {string} */
         Currency: "PHP";
         /** @description Nonnegative centavos up to 9223372036854775807 inclusive. */
-        MinorUnits: string | unknown | unknown;
+        MinorUnits: string;
         /** @description Positive centavos up to 9223372036854775807 inclusive. Out-of-range values are invalid requests. */
         TransferAmountMinor: components["schemas"]["MinorUnits"] & string;
         Account: {

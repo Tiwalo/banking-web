@@ -1,15 +1,37 @@
 import { expect, test, type Page } from "@playwright/test";
 import { Pool } from "pg";
+import { formatPhp } from "../../lib/money";
+
+test("the Tiwalo sign-in form fits mobile and loads its bundled design assets", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 760 });
+  await page.goto("/");
+  await page.getByRole("link", { name: "Sign in", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Sign in to Tiwalo" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
+  await expect(page.locator("#kc-header-wrapper")).toContainText("Tiwalo");
+  await expect(page.locator("#kc-header-wrapper")).toHaveCSS("color", "rgb(9, 44, 98)");
+  expect(await page.evaluate(async () => {
+    await document.fonts.ready;
+    return [...document.fonts].some(font => font.family.includes("Inter") && font.status === "loaded");
+  })).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  await page.locator("#username").fill("unregistered-synthetic-login");
+  await page.locator("#password").fill("synthetic-invalid-password");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page.getByText("Check your username and password and try again.")).toBeVisible();
+});
 
 async function login(page: Page, username: string, password: string | undefined) {
-  await page.goto("/sign-in");
+  await page.goto("/");
+  await page.getByRole("link", { name: "Sign in", exact: true }).click();
   await continueLogin(page, username, password);
 }
 
 async function continueLogin(page: Page, username: string, password: string | undefined) {
   if (!password) throw new Error("Set the local test password for " + username);
-  await page.getByRole("button", { name: "Continue with Keycloak" }).click();
   await page.waitForURL(url => url.origin === "http://localhost:8180" && url.pathname.startsWith("/realms/tiwalo/"));
+  await expect(page.getByRole("heading", { name: "Sign in to Tiwalo" })).toBeVisible();
+  await expect(page.getByText("Banking simulation · Fictional funds only")).toBeVisible();
   await page.locator("#username").fill(username);
   await page.locator("#password").fill(password);
   await page.locator("#kc-login").click();
@@ -28,10 +50,23 @@ test("two synthetic customers read their own accounts, deny cross-owner reads, a
       await login(page, customer.name, customer.password);
       await expect(page.getByRole("heading", { name: "Your accounts" })).toBeVisible({ timeout: 30_000 });
       const accounts = page.locator('a[href^="/accounts/"]');
+      const balance = page.getByRole("region", { name: "Available balance" }).locator(".money");
+      await expect(balance).toHaveText(/^₱[\d,]+\.\d{2}$/);
+      const expectedMinor = process.env[index === 0 ? "W3_CUSTOMER_1_MINOR" : "W3_CUSTOMER_2_MINOR"];
+      const expected = expectedMinor === undefined ? await balance.innerText() : formatPhp(expectedMinor);
+      await expect(balance).toHaveText(expected);
+      await page.getByRole("link", { name: "Refresh balances" }).click();
+      await expect(balance).toHaveText(expected);
       await expect(accounts).toHaveCount(1);
       await expect(accounts).toHaveAttribute("href", "/accounts/" + customer.id);
       await accounts.click();
       await expect(page.getByRole("heading", { name: "Account details" })).toBeVisible();
+      await expect(balance).toHaveText(expected);
+      const refresh = page.waitForResponse(response => response.request().isNavigationRequest() &&
+        new URL(response.url()).pathname === "/accounts/" + customer.id);
+      await page.getByRole("link", { name: "Refresh balance", exact: true }).click();
+      expect((await refresh).headers()["cache-control"]).toContain("no-store");
+      await expect(balance).toHaveText(expected);
       const hidden = await page.goto("/accounts/" + customers[1 - index].id);
       expect(hidden?.status()).toBe(404);
       await expect(page.getByRole("heading", { name: "Page not found." })).toBeVisible();

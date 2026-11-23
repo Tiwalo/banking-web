@@ -4,7 +4,7 @@ import Ajv2020 from "ajv/dist/2020";
 import addFormats from "ajv-formats";
 import { parse } from "yaml";
 import { expect, expectTypeOf, test } from "vitest";
-import type { operations } from "../../lib/api/generated/banking";
+import type { components, operations } from "../../lib/api/generated/banking";
 import { account, findings, page, problem, receipt, transfer } from "./fixtures";
 
 const id = "urn:tiwalo:fixture-validation";
@@ -40,6 +40,7 @@ test("contract distinguishes exact bounded centavos from unbounded signed diagno
   expectTypeOf<Decline["status"]>().toEqualTypeOf<422>();
   expectTypeOf<Decline["code"]>().toEqualTypeOf<"INSUFFICIENT_FUNDS" | "TRANSFER_LIMIT_EXCEEDED" | "SAME_ACCOUNT" | "ACCOUNT_UNAVAILABLE">();
   const minor = "/components/schemas/MinorUnits";
+  expectTypeOf<components["schemas"]["Account"]["availableBalanceMinor"]>().toEqualTypeOf<string>();
   expect(accepts(minor, "9223372036854775807")).toBe(true);
   for (const value of ["9223372036854775808", "-1", 1, "01"]) expect(accepts(minor, value)).toBe(false);
   expect(accepts("/components/schemas/EvidenceMinor", "-9223372036854775809")).toBe(true);
