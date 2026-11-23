@@ -18,6 +18,24 @@ test("anonymous account reads lead to customer sign-in", async ({ page }) => {
   await expect(page.getByText("Customer sign-in started")).toBeVisible();
 });
 
+test("protected transfer, receipt and operator pages require sign-in and prevent shared caching", async ({ page }) => {
+  const id = "00000000-0000-4000-8000-000000000001";
+  // Disable only the sign-in handoff so the test can observe the actual redirect destination.
+  await page.route("**/sign-in/start", route => route.fulfill({ status: 200, body: "Sign-in required" }));
+  for (const path of [
+    `/accounts/${id}/send`, `/transfers/review/${id}`, "/receipts", `/receipts/${id}`,
+    "/operations", "/operations/reconciliations", `/operations/reconciliations/${id}`,
+  ]) {
+    const initial = page.waitForResponse(response =>
+      response.request().isNavigationRequest() && new URL(response.url()).pathname === path);
+    await page.goto(path);
+    const cache = (await initial).headers()["cache-control"] ?? "";
+    expect(cache, path).toContain("private");
+    expect(cache, path).toContain("no-store");
+    await expect(page.getByText("Sign-in required", { exact: true })).toBeVisible();
+  }
+});
+
 test("rejects cross-origin sign-in and logout before contacting the provider", async ({ request }) => {
   for (const path of ["/sign-in/start", "/logout"]) {
     const response = await request.post(path, { headers: { Origin: "https://untrusted.invalid" } });
