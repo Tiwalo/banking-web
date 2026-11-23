@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { Pool } from "pg";
+import { randomUUID } from "node:crypto";
+import AxeBuilder from "@axe-core/playwright";
 import { formatPhp } from "../../lib/money";
 
 test("the Tiwalo sign-in form fits mobile and loads its bundled design assets", async ({ page }) => {
@@ -127,9 +129,44 @@ test("a customer can save, reload and revise a payment review without submitting
 
 test("the operator cannot open a customer account", async ({ page }) => {
   await login(page, "demo-operator", process.env.W2_OPERATOR_PASSWORD);
-  await expect(page.getByRole("heading", { name: "Customer access denied" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Operations dashboard" })).toBeVisible({ timeout: 30_000 });
   await page.goto("/accounts/9e4777f9-8de5-462c-8366-9d8aa9766096");
   await expect(page.getByRole("heading", { name: "Customer access denied" })).toBeVisible();
+});
+
+test("a customer cannot open the operator lookup", async ({ page }) => {
+  await login(page, "demo-customer", process.env.W2_CUSTOMER_1_PASSWORD);
+  await expect(page.getByRole("heading", { name: "Your accounts" })).toBeVisible();
+  await page.goto("/operations/reconciliations");
+  await expect(page.getByRole("heading", { name: "Operations access denied" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Look up findings" })).toHaveCount(0);
+});
+
+test("operator explicitly looks up an empty run and pages through a populated run", async ({ page }) => {
+  const empty = process.env.W5_EMPTY_RUN_ID;
+  const multi = process.env.W5_MULTI_RUN_ID;
+  test.skip(!empty || !multi, "Supply a known empty run and a report with more than 20 findings.");
+  await login(page, "demo-operator", process.env.W2_OPERATOR_PASSWORD);
+  await page.getByRole("link", { name: "Open reconciliation" }).click();
+  await page.getByLabel("Run ID").fill(randomUUID());
+  await page.getByRole("button", { name: "Look up findings" }).click();
+  await expect(page.getByRole("main").getByRole("alert")).toHaveText("This run is unavailable. Check the run ID.");
+  await page.getByLabel("Run ID").fill(empty!);
+  await page.getByRole("button", { name: "Look up findings" }).click();
+  await expect(page.getByRole("status")).toContainText("No findings for run");
+  await page.goto("/operations/reconciliations/" + multi);
+  await expect(page.getByRole("table")).toHaveCount(0);
+  await page.getByRole("button", { name: "Look up findings" }).click();
+  await expect(page.locator("tbody tr")).toHaveCount(20);
+  await expect(page.getByRole("main").getByRole("button")).toHaveText(["Log out", "Look up findings", "Next findings"]);
+  await page.setViewportSize({ width: 320, height: 760 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  const accessibility = await new AxeBuilder({ page }).include("main").withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+  expect(accessibility.violations.map(issue => issue.id)).toEqual([]);
+  const first = await page.locator("tbody th").allTextContents();
+  await page.getByRole("button", { name: "Next findings" }).click();
+  await expect.poll(async () => (await page.locator("tbody th").allTextContents())[0]).toMatch(/^…[0-9a-f]{8}$/);
+  await expect.poll(async () => (await page.locator("tbody th").allTextContents()).some(ref => !first.includes(ref))).toBe(true);
 });
 
 test("an explicit synthetic one-cent payment produces a receipt and refreshes the source balance", async ({ page, context }) => {

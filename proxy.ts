@@ -5,7 +5,8 @@ export function proxy(request: NextRequest) {
   const nonce = randomBytes(16).toString("base64");
   const development = process.env.NODE_ENV === "development";
   const signInForm = ["/sign-in", "/dashboard", "/access-denied"].includes(request.nextUrl.pathname) ||
-    request.nextUrl.pathname.startsWith("/accounts/");
+    request.nextUrl.pathname.startsWith("/accounts/") || request.nextUrl.pathname === "/operations" ||
+    request.nextUrl.pathname.startsWith("/operations/");
   const issuer = process.env.KEYCLOAK_ISSUER;
   const formTarget = signInForm && issuer ? " " + new URL(issuer).origin : "";
   const policy = [

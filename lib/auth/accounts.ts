@@ -4,21 +4,19 @@ import { redirect } from "next/navigation";
 import { createRemoteJWKSet, errors, jwtVerify } from "jose";
 import { APIError } from "better-auth/api";
 import { getSessionCookie } from "better-auth/cookies";
-import { createCustomerApi } from "../api/client";
-import { canReadCustomerAccounts } from "./customer-role";
+import { createCustomerApi, createOperatorApi } from "../api/client";
+import { canInvestigate, canReadCustomerAccounts } from "./customer-role";
 import { auth, required, trustedUrl } from "./server";
 
 let keys: ReturnType<typeof createRemoteJWKSet>;
-export async function verifiedCustomer(permission: "accounts:read" | "transfers:create" | "transfers:read" = "accounts:read") {
+async function verifiedIdentity() {
   const requestHeaders = await headers();
   if (!getSessionCookie(requestHeaders)) redirect("/sign-in");
   const session = await auth().api.getSession({ headers: requestHeaders });
   if (!session) redirect("/sign-in?expired=1");
   const issuer = trustedUrl("KEYCLOAK_ISSUER").href.replace(/\/$/, "");
   let token: string;
-  let allowed: boolean;
-  let canPreparePayment: boolean;
-  let canReadReceipts: boolean;
+  let claims;
   try {
     const accounts = await auth().api.listUserAccounts({ headers: requestHeaders });
     const account = accounts.find(item => item.providerId === "keycloak");
@@ -29,11 +27,9 @@ export async function verifiedCustomer(permission: "accounts:read" | "transfers:
     const { payload } = await jwtVerify(token, keys, {
       issuer, audience: "banking-core-api", algorithms: ["RS256"], requiredClaims: ["exp", "sub", "azp"],
     });
-    canPreparePayment = canReadCustomerAccounts({ resource_access: payload.resource_access }, "transfers:create");
-    canReadReceipts = canReadCustomerAccounts({ resource_access: payload.resource_access }, "transfers:read");
-    allowed = payload.azp === required("KEYCLOAK_CLIENT_ID") &&
-      account.accountId === payload.sub &&
-      canReadCustomerAccounts({ resource_access: payload.resource_access }, permission);
+    if (payload.azp !== required("KEYCLOAK_CLIENT_ID") || payload.sub !== account.accountId)
+      throw new errors.JWTInvalid("Unexpected token identity");
+    claims = { resource_access: payload.resource_access };
   } catch (error) {
     // Better Auth uses this code for both refresh outages and revoked credentials.
     if (error instanceof APIError && error.statusCode === 400 &&
@@ -45,8 +41,23 @@ export async function verifiedCustomer(permission: "accounts:read" | "transfers:
     // The page error boundary offers a retry while preserving the session.
     throw new Error("Identity verification is temporarily unavailable.");
   }
-  if (!allowed) redirect("/access-denied");
-  return { actor: session.user.id, canPreparePayment, canReadReceipts, api: createCustomerApi({ accessToken: token }) };
+  return { actor: session.user.id, claims, accessToken: token };
+}
+
+export async function verifiedCustomer(permission: "accounts:read" | "transfers:create" | "transfers:read" = "accounts:read", dashboard = false) {
+  const identity = await verifiedIdentity();
+  if (!identity) return null;
+  if (dashboard && canInvestigate(identity.claims)) redirect("/operations");
+  if (!canReadCustomerAccounts(identity.claims, permission)) redirect("/access-denied");
+  return { actor: identity.actor, canPreparePayment: canReadCustomerAccounts(identity.claims, "transfers:create"),
+    canReadReceipts: canReadCustomerAccounts(identity.claims, "transfers:read"), api: createCustomerApi({ accessToken: identity.accessToken }) };
+}
+
+export async function verifiedOperator() {
+  const identity = await verifiedIdentity();
+  if (!identity) return null;
+  if (!canInvestigate(identity.claims)) redirect("/access-denied?area=operations");
+  return { actor: identity.actor, api: createOperatorApi({ accessToken: identity.accessToken }) };
 }
 
 export async function customerAccounts() {

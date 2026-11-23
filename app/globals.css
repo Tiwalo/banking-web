@@ -31,6 +31,21 @@
 .payment-summary dt { color: var(--muted); }
 .payment-summary dd { margin: -8px 0 8px; font-weight: 600; }
 .recipient-reference { white-space: pre-wrap; overflow-wrap: anywhere; }
+.ops-layout { display: grid; grid-template-columns: 14rem minmax(0, 1fr); gap: 32px; }
+.ops-layout aside { padding: 32px 16px; color: var(--navy); border-inline-end: 1px solid var(--border); }
+.ops-layout nav { display: grid; gap: 16px; margin-bottom: 32px; }
+.ops-layout nav a { text-decoration: underline; }
+.ops-layout .account-view { min-width: 0; }
+.ops-table { max-width: 100%; overflow: auto; }
+.ops-table table { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.ops-table caption { text-align: left; font-weight: 600; padding-block: 8px; }
+.ops-table th, .ops-table td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+.ops-table thead { background: var(--navy); color: white; }
+@media (max-width: 1023px) {
+  .ops-layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .ops-layout aside { border-inline-end: 0; border-bottom: 1px solid var(--border); padding: 16px 0; }
+  .ops-layout nav { display: flex; flex-wrap: wrap; margin-bottom: 12px; }
+}
 @media (max-width: 799px) {
   .frame { width: min(100% - 2.5rem, 40rem); }
   .hero, .about { grid-template-columns: 1fr; }
