@@ -4,6 +4,8 @@ Tiwalo is a simulated Philippine banking project using fictional balances and sy
 
 ## Run locally
 
+For release gates and the rollback rehearsal, see [MVP release verification](docs/release-verification.md).
+
 Use Node 24.22.3 and its bundled npm 11.19.1. With a compatible Node version manager, select the version in `.nvmrc`. From the repository root run:
 
 ```sh

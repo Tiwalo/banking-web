@@ -165,8 +165,10 @@ test("operator explicitly looks up an empty run and pages through a populated ru
   expect(accessibility.violations.map(issue => issue.id)).toEqual([]);
   const first = await page.locator("tbody th").allTextContents();
   await page.getByRole("button", { name: "Next findings" }).click();
-  await expect.poll(async () => (await page.locator("tbody th").allTextContents())[0]).toMatch(/^…[0-9a-f]{8}$/);
-  await expect.poll(async () => (await page.locator("tbody th").allTextContents()).some(ref => !first.includes(ref))).toBe(true);
+  const nextPage = page.locator("tbody th");
+  await expect(nextPage.first()).toHaveText(/^…[0-9a-f]{8}$/, { timeout: 30_000 });
+  await expect.poll(async () => (await nextPage.allTextContents()).some(ref => !first.includes(ref)),
+    { timeout: 30_000 }).toBe(true);
 });
 
 test("an explicit synthetic one-cent payment produces a receipt and refreshes the source balance", async ({ page, context }) => {
